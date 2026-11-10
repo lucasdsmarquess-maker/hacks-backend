@@ -1,9 +1,7 @@
-server.js
 const express = require('express');
 const cors = require('cors');
 const app = express();
 
-// Substitua pelas suas credenciais reais de produção das APIs
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || 'sk_live_SUA_CHAVE_STRIPE_AQUI';
 const MERCADOPAGO_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || 'APP_USR-SEU_TOKEN_MERCADO_PAGO_AQUI';
 
@@ -15,7 +13,6 @@ const client = new MercadoPagoConfig({ accessToken: MERCADOPAGO_ACCESS_TOKEN });
 app.use(express.json());
 app.use(cors());
 
-// Rota para criar checkout oficial via Stripe (Cartão / Global)
 app.post('/api/create-stripe-checkout', async (req, res) => {
     try {
         const { productTitle, amount, currency } = req.body;
@@ -39,7 +36,6 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
     }
 });
 
-// Rota para gerar Pix Dinâmico e Oficial via Mercado Pago
 app.post('/api/create-pix-preference', async (req, res) => {
     try {
         const { productTitle, amount } = req.body;
@@ -65,4 +61,17 @@ app.post('/api/create-pix-preference', async (req, res) => {
         res.json({ 
             init_point: response.init_point,
             qr_code: response.point_of_interaction?.transaction_data?.qr_code,
-            qr_code_base64: response.point_of_interaction?.transaction_data?.qr_
+            qr_code_base64: response.point_of_interaction?.transaction_data?.qr_code_base64
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/webhook', (req, res) => {
+    const event = req.body;
+    res.status(200).json({ received: true });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor rodando profissionalmente na porta ${PORT}`));
